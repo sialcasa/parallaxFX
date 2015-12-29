@@ -12,6 +12,10 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 
 public class ParallaxImpl {
+	
+	private static final double PERSPECTIVE_WEIGHT = 0.05;
+	private static final double MOVEMENT_WEIGHT = 0.005;
+	
 	/**
 	 * Perspective
 	 * 
@@ -26,12 +30,12 @@ public class ParallaxImpl {
 			public void handle(MouseEvent event) {
 				calculator.setX(event.getX());
 				calculator.setY(event.getX());
-				calculator.setWeight(0.005);
+				calculator.setWeight(MOVEMENT_WEIGHT);
 				calculator.setWidth(node.getLayoutBounds().getMaxX());
 				calculator.setHeight(node.getLayoutBounds().getMaxY());
 				
 				processPerspective(node, calculator);
-				processBackgroundSpot(node, calculator);
+				// processBackgroundSpot(node, calculator);
 			}
 		});
 		
@@ -48,12 +52,11 @@ public class ParallaxImpl {
 				public void handle(MouseEvent event) {
 					calculator.setX(event.getX());
 					calculator.setY(event.getY());
-					calculator.setWeight(0.1 * (index + 1));
+					calculator.setWeight(PERSPECTIVE_WEIGHT * (index + 1));
 					calculator.setWidth(node.getLayoutBounds().getMaxX());
 					calculator.setHeight(node.getLayoutBounds().getMaxY());
 					processMovement(child, calculator);
 				}
-				
 			});
 		}
 	}

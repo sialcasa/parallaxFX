@@ -8,31 +8,30 @@ import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
-public class HelloMenu extends Application {
+public class Starter extends Application {
+	
+	
 	
 	@Override
 	public void start(Stage stage) {
-		// load the image
-		Image image0 = new Image(getClass().getResource("couch/0.png").toExternalForm());
-		Image image1 = new Image(getClass().getResource("couch/1.png").toExternalForm());
-		Image image2 = new Image(getClass().getResource("couch/2.png").toExternalForm());
 		
-		// simple displays ImageView the image as is
-		Group image0group = createImageGroup(image0);
-		Group image1group = createImageGroup(image1);
-		Group image2group = createImageGroup(image2);
+		Image[] loadImages = new ImageLoader().loadImages("/couch");
 		
 		StackPane stack = new StackPane();
-		stack.getChildren().addAll(image0group, image1group, image2group);
 		
-		// new Parallax().applyParallax(stack);
+		for (int i = 0; i < loadImages.length; i++) {
+			Image image = loadImages[i];
+			Group createImageGroup = createImageGroup(image);
+			stack.getChildren().add(createImageGroup);
+		}
+		
 		new ParallaxImpl().applyParallax(stack);
-		// new Parallax(stack);
 		
 		Scene scene = new Scene(stack);
-		
+		scene.setFill(Color.web("#999999"));
 		stage.setTitle("ImageView");
 		stage.setScene(scene);
 		stage.sizeToScene();
@@ -41,7 +40,7 @@ public class HelloMenu extends Application {
 	
 	private Group createImageGroup(Image front) {
 		ImageView frontImage = new ImageView();
-		frontImage.setFitHeight(350);
+		frontImage.setFitWidth(800);
 		frontImage.setPreserveRatio(true);
 		frontImage.setImage(front);
 		return new Group(frontImage);
