@@ -17,6 +17,7 @@ public class Starter extends Application {
 		Image[] loadImages = new ImageLoader().loadImages("/couch");
 		
 		ParallaxPane stack = new ParallaxPane();
+		stack.setLightingEnabled(true);
 		
 		for (int i = 0; i < loadImages.length; i++) {
 			Image image = loadImages[i];

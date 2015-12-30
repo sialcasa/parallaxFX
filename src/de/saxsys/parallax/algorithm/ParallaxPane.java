@@ -1,20 +1,20 @@
 package de.saxsys.parallax.algorithm;
 
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
-import javafx.scene.effect.DropShadow;
-import javafx.scene.effect.Light;
-import javafx.scene.effect.Lighting;
-import javafx.scene.effect.PerspectiveTransform;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
-import javafx.scene.paint.Color;
 
 public class ParallaxPane extends StackPane {
 	
+	// Todo config
 	private static final double PERSPECTIVE_WEIGHT = 0.05;
 	private static final double MOVEMENT_WEIGHT = 0.005;
+	
+	BooleanProperty lightingEnabled = new SimpleBooleanProperty(false);
 	
 	public ParallaxPane() {
 		applyParallax();
@@ -28,100 +28,49 @@ public class ParallaxPane extends StackPane {
 	private void applyParallax() {
 		addEventFilter(MouseEvent.MOUSE_MOVED, new EventHandler<MouseEvent>() {
 			
-			Calculator calculator = new Calculator();
-			Calculator childCalc = new Calculator();
+			Calculator movementCalculator = new Calculator();
+			Calculator childrenCalculator = new Calculator();
 			
 			@Override
 			public void handle(MouseEvent event) {
-				initCalculator(calculator, event, MOVEMENT_WEIGHT);
+				updateCalculator(movementCalculator, event, MOVEMENT_WEIGHT);
 				
-				processPerspective(calculator);
-				processBackgroundSpot(calculator);
+				setEffect(new PerspectiveParallaxEffect(movementCalculator));
 				
-				ObservableList<Node> childrenUnmodifiable = getChildrenUnmodifiable();
-				
-				for (int i = 0; i < childrenUnmodifiable.size(); i++) {
-					Node child = childrenUnmodifiable.get(i);
-					final int index = i;
-					initCalculator(childCalc, event, PERSPECTIVE_WEIGHT * (index + 1));
-					processMovement(child, childCalc);
+				if (isLightingEnabled()) {
+					Node child = getChildren().get(0);
+					child.setEffect(new MouseLighting(movementCalculator));
 				}
 				
+				ObservableList<Node> children = getChildren();
+				for (int i = 0; i < children.size(); i++) {
+					updateCalculator(childrenCalculator, event, PERSPECTIVE_WEIGHT * (i + 1));
+					Node node = children.get(i);
+					node.setTranslateX(childrenCalculator.getxDistanceFromCenter() * childrenCalculator.getWeight());
+					node.setTranslateY(childrenCalculator.getyDistanceFromCenter() * childrenCalculator.getWeight());
+				}
 			}
 			
-			private void initCalculator(Calculator calc, MouseEvent event, double weight) {
-				calc.setX(event.getX());
-				calc.setY(event.getY());
+			private void updateCalculator(Calculator calc, MouseEvent event, double weight) {
 				calc.setWeight(weight);
-				calc.setWidth(getLayoutBounds().getMaxX());
-				calc.setHeight(getLayoutBounds().getMaxY());
+				calc.setCoordinates(event.getX(), event.getY());
+				calc.setSize(getLayoutBounds().getMaxX(), getLayoutBounds().getMaxY());
 			}
 		});
-		
-		
+	}
+	
+	public final BooleanProperty lightingEnabledProperty() {
+		return this.lightingEnabled;
 	}
 	
 	
-	
-	private void processBackgroundSpot(Calculator calculator) {
-		Light.Spot light = new Light.Spot();
-		light.setColor(Color.WHITE);
-		light.setX(calculator.getX());
-		light.setY(calculator.getY());
-		light.setZ(500);
-		light.setPointsAtX(0);
-		light.setPointsAtY(0);
-		light.setPointsAtZ(-10000);
-		light.setSpecularExponent(0);
-		
-		Lighting lighting = new Lighting();
-		lighting.setDiffuseConstant(2);
-		lighting.setLight(light);
-		lighting.setSurfaceScale(1);
-		Node child = getChildrenUnmodifiable().get(0);
-		child.setEffect(lighting);
+	public final boolean isLightingEnabled() {
+		return this.lightingEnabledProperty().get();
 	}
 	
 	
-	
-	private void processMovement(Node node, Calculator processor) {
-		node.setTranslateX(processor.getxDistanceFromCenter() * processor.getWeight());
-		node.setTranslateY(processor.getyDistanceFromCenter() * processor.getWeight());
+	public final void setLightingEnabled(final boolean lightingEnabled) {
+		this.lightingEnabledProperty().set(lightingEnabled);
 	}
 	
-	
-	
-	private void processPerspective(Calculator calculator) {
-		PerspectiveTransform perspective = new PerspectiveTransform();
-		DropShadow dropShadow = new DropShadow(10, Color.GRAY);
-		dropShadow.setSpread(0.4);
-		perspective.setInput(dropShadow);
-		
-		setEffect(perspective);
-		
-		double width = calculator.getWidth();
-		double height = calculator.getHeight();
-		
-		double xDistanceFromCenter = calculator.getxDistanceFromCenter();
-		double yDistanceFromCenter = calculator.getyDistanceFromCenter();
-		
-		double relativeXFromCenter = calculator.getRelativeXFromCenter();
-		double relativeYFromCenter = calculator.getRelativeYFromCenter();
-		
-		// Oben Links
-		perspective.setUlx(-xDistanceFromCenter * relativeYFromCenter);
-		perspective.setUly(-yDistanceFromCenter * relativeXFromCenter); // - height / 2 * zwischen
-		
-		// Oben rechts
-		perspective.setUrx((width - xDistanceFromCenter * relativeYFromCenter));
-		perspective.setUry(-yDistanceFromCenter * relativeXFromCenter);
-		
-		// Unten rechts
-		perspective.setLrx((width - xDistanceFromCenter * relativeYFromCenter));
-		perspective.setLry(height - yDistanceFromCenter * relativeXFromCenter);
-		
-		// Unten links
-		perspective.setLlx(-xDistanceFromCenter * relativeYFromCenter);
-		perspective.setLly(height - yDistanceFromCenter * relativeXFromCenter);
-	}
 }
