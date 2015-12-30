@@ -1,26 +1,22 @@
 package de.saxsys.parallax;
 
 
-import de.saxsys.parallax.algorithm.ParallaxImpl;
+import de.saxsys.parallax.algorithm.ParallaxPane;
 import javafx.application.Application;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.StackPane;
-import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 public class Starter extends Application {
-	
-	
 	
 	@Override
 	public void start(Stage stage) {
 		
 		Image[] loadImages = new ImageLoader().loadImages("/couch");
 		
-		StackPane stack = new StackPane();
+		ParallaxPane stack = new ParallaxPane();
 		
 		for (int i = 0; i < loadImages.length; i++) {
 			Image image = loadImages[i];
@@ -28,11 +24,8 @@ public class Starter extends Application {
 			stack.getChildren().add(createImageGroup);
 		}
 		
-		new ParallaxImpl().applyParallax(stack);
 		
 		Scene scene = new Scene(stack);
-		scene.setFill(Color.web("#999999"));
-		stage.setTitle("ImageView");
 		stage.setScene(scene);
 		stage.sizeToScene();
 		stage.show();
@@ -45,10 +38,6 @@ public class Starter extends Application {
 		frontImage.setImage(front);
 		return new Group(frontImage);
 	}
-	
-	
-	
-	
 	
 	public static void main(String[] args) {
 		Application.launch(args);

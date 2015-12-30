@@ -3,67 +3,67 @@ package de.saxsys.parallax.algorithm;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.effect.Light;
 import javafx.scene.effect.Lighting;
 import javafx.scene.effect.PerspectiveTransform;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 
-public class ParallaxImpl {
+public class ParallaxPane extends StackPane {
 	
 	private static final double PERSPECTIVE_WEIGHT = 0.05;
 	private static final double MOVEMENT_WEIGHT = 0.005;
+	
+	public ParallaxPane() {
+		applyParallax();
+	}
 	
 	/**
 	 * Perspective
 	 * 
 	 * @param order
 	 */
-	public void applyParallax(Parent node) {
-		node.addEventFilter(MouseEvent.MOUSE_MOVED, new EventHandler<MouseEvent>() {
+	private void applyParallax() {
+		addEventFilter(MouseEvent.MOUSE_MOVED, new EventHandler<MouseEvent>() {
 			
 			Calculator calculator = new Calculator();
+			Calculator childCalc = new Calculator();
 			
 			@Override
 			public void handle(MouseEvent event) {
-				calculator.setX(event.getX());
-				calculator.setY(event.getX());
-				calculator.setWeight(MOVEMENT_WEIGHT);
-				calculator.setWidth(node.getLayoutBounds().getMaxX());
-				calculator.setHeight(node.getLayoutBounds().getMaxY());
+				initCalculator(calculator, event, MOVEMENT_WEIGHT);
 				
-				processPerspective(node, calculator);
-				// processBackgroundSpot(node, calculator);
+				processPerspective(calculator);
+				processBackgroundSpot(calculator);
+				
+				ObservableList<Node> childrenUnmodifiable = getChildrenUnmodifiable();
+				
+				for (int i = 0; i < childrenUnmodifiable.size(); i++) {
+					Node child = childrenUnmodifiable.get(i);
+					final int index = i;
+					initCalculator(childCalc, event, PERSPECTIVE_WEIGHT * (index + 1));
+					processMovement(child, childCalc);
+				}
+				
+			}
+			
+			private void initCalculator(Calculator calc, MouseEvent event, double weight) {
+				calc.setX(event.getX());
+				calc.setY(event.getY());
+				calc.setWeight(weight);
+				calc.setWidth(getLayoutBounds().getMaxX());
+				calc.setHeight(getLayoutBounds().getMaxY());
 			}
 		});
 		
-		ObservableList<Node> childrenUnmodifiable = node.getChildrenUnmodifiable();
 		
-		for (int i = 0; i < childrenUnmodifiable.size(); i++) {
-			Node child = childrenUnmodifiable.get(i);
-			final int index = i;
-			node.addEventFilter(MouseEvent.MOUSE_MOVED, new EventHandler<MouseEvent>() {
-				
-				Calculator calculator = new Calculator();
-				
-				@Override
-				public void handle(MouseEvent event) {
-					calculator.setX(event.getX());
-					calculator.setY(event.getY());
-					calculator.setWeight(PERSPECTIVE_WEIGHT * (index + 1));
-					calculator.setWidth(node.getLayoutBounds().getMaxX());
-					calculator.setHeight(node.getLayoutBounds().getMaxY());
-					processMovement(child, calculator);
-				}
-			});
-		}
 	}
 	
 	
 	
-	private void processBackgroundSpot(Parent node, Calculator calculator) {
+	private void processBackgroundSpot(Calculator calculator) {
 		Light.Spot light = new Light.Spot();
 		light.setColor(Color.WHITE);
 		light.setX(calculator.getX());
@@ -78,7 +78,7 @@ public class ParallaxImpl {
 		lighting.setDiffuseConstant(2);
 		lighting.setLight(light);
 		lighting.setSurfaceScale(1);
-		Node child = node.getChildrenUnmodifiable().get(0);
+		Node child = getChildrenUnmodifiable().get(0);
 		child.setEffect(lighting);
 	}
 	
@@ -91,16 +91,13 @@ public class ParallaxImpl {
 	
 	
 	
-	private void processPerspective(Node node, Calculator calculator) {
+	private void processPerspective(Calculator calculator) {
 		PerspectiveTransform perspective = new PerspectiveTransform();
 		DropShadow dropShadow = new DropShadow(10, Color.GRAY);
 		dropShadow.setSpread(0.4);
 		perspective.setInput(dropShadow);
 		
-		node.setEffect(perspective);
-		
-		
-		
+		setEffect(perspective);
 		
 		double width = calculator.getWidth();
 		double height = calculator.getHeight();

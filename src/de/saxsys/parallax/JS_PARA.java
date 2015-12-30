@@ -14,13 +14,13 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Translate;
 
-public class Parallax {
+public class JS_PARA {
 	
 	
 	private final Parent parent;
 	private final Rectangle gradient = new Rectangle();;
 	
-	public Parallax(Parent parent) {
+	public JS_PARA(Parent parent) {
 		
 		this.parent = parent;
 		
