@@ -14,7 +14,7 @@ public class Starter extends Application {
 	@Override
 	public void start(Stage stage) {
 		
-		Image[] loadImages = new ImageLoader().loadImages("/couch");
+		Image[] loadImages = new ImageLoader().loadImages("/horror");
 		
 		ParallaxPane stack = new ParallaxPane();
 		stack.setLightingEnabled(true);
