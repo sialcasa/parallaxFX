@@ -58,7 +58,7 @@ public class ParallaxSkin extends SkinBase<Parallax> {
 		// // DS Around
 		DropShadow dropShadow = new DropShadow(5, Color.BLACK);
 		dropShadow.setSpread(0.4);
-		control.setEffect(dropShadow);
+		container.setEffect(dropShadow);
 	}
 	
 	
